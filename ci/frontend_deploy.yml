@@ -1,0 +1,43 @@
+.frontend_deploy:
+  stage: deploy
+  tags:
+    - deploy
+  variables: !reference [.variables, common]
+  before_script:
+    - !reference [.scripts, script]
+  script:
+    - !reference [.scripts, install_deploy_deps]
+    # Копируем билд фронтенда с сервера gitlab ci
+    - rsync -arvh --exclude $FRONTEND_PATH/.next/standalone/.images_cache --delete-after -e "ssh -p $SSH_PORT" $FRONTEND_PATH/.next/standalone $PROJECT_HOST:$PROJECT_PATH/$FRONTEND_PATH
+    # Копируем .next/static с сервера gitlab ci
+    - rsync -arvh --delete-after -e "ssh -p $SSH_PORT" $FRONTEND_PATH/.next/static $PROJECT_HOST:$PROJECT_PATH/$FRONTEND_PATH/standalone/.next
+    # Копируем .env
+    - ssh -p $SSH_PORT $PROJECT_HOST "cd $PROJECT_PATH/$FRONTEND_PATH/ && cp .env standalone/.env"
+    # Создаем симлинк на public
+    - ssh -p $SSH_PORT $PROJECT_HOST "cd $PROJECT_PATH/$FRONTEND_PATH/standalone && [ -d ../public ] && ln -s ../public public"
+    # Пуллим изменения репозитория
+    - !reference [.scripts, git_pull]
+    # Перезапускаем pm2
+    - ssh -p $SSH_PORT $PROJECT_HOST "cd $PROJECT_PATH/$FRONTEND_PATH/standalone && bash ../pm2.sh $PM2_PROCESS_NAME"
+
+frontend_deploy_dev:
+  extends: .frontend_deploy
+  variables: !reference [.variables, dev]
+  dependencies:
+    - frontend_build_dev
+  environment:
+    name: dev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      changes: !reference [.changes, frontend_build]
+
+frontend_deploy_prod:
+  extends: .frontend_deploy
+  variables: !reference [.variables, prod]
+  dependencies:
+    - frontend_build_prod
+  environment:
+    name: prod
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $ENABLE_PROD_JOBS == "true"
+      changes: !reference [.changes, frontend_build]

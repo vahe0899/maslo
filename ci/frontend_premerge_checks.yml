@@ -1,0 +1,29 @@
+frontend_premerge_checks:
+  image: $IMAGE_FRONTEND
+  variables: !reference [.variables, common]
+  tags:
+    - test
+  cache:
+    - key:
+        files:
+          - frontend/package-lock.json
+      paths:
+        - frontend/.npm/
+      policy: pull
+  artifacts:
+    paths:
+      - frontend/junit.xml
+    expire_in: 1 day
+    reports:
+      junit:
+        - frontend/junit.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+      changes: !reference [.changes, frontend_build]
+  before_script:
+    - cd $FRONTEND_PATH
+    - !reference [.scripts, install_frontend_dependencies]
+  script:
+    - npm run tsc
+    - npm run test:ci

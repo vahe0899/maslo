@@ -1,0 +1,70 @@
+.popup {
+    --leave-duration: 0.65s;
+    position: fixed;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+
+    &:not(.popup--opened) {
+        visibility: hidden;
+    }
+
+    &[data-popup-preset='default'] {
+        transition:
+            opacity var(--leave-duration) ease,
+            visibility var(--leave-duration) ease;
+
+        &:not(.popup--opened) {
+            opacity: 0;
+        }
+    }
+
+    &[data-popup-preset='slide-right'] {
+        transition: visibility var(--leave-duration) ease;
+
+        .popup-overlay {
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-container {
+            transition: transform var(--leave-duration) easeInOutCubic;
+            left: auto;
+            right: 0;
+        }
+
+        &:not(.popup--opened) {
+            .popup-overlay {
+                opacity: 0;
+            }
+
+            .popup-container {
+                transform: translate3d(100%, 0, 0);
+            }
+        }
+    }
+}
+
+.popup-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: inherit;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.5;
+}

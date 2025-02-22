@@ -1,0 +1,33 @@
+frontend_test_storybook:
+  image: $E2E_TESTING_IMAGE
+  stage: test
+  tags:
+    - test
+  variables: !reference [.variables, common]
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/.npm/
+    policy: pull
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: never
+      changes: !reference [.changes, frontend_build_storybook]
+    - if: $CI_COMMIT_BRANCH == "stage"
+      when: never
+      changes: !reference [.changes, frontend_build_storybook]
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: never
+      changes: !reference [.changes, frontend_build_storybook]
+  dependencies:
+    - frontend_build_storybook
+  needs: ["frontend_build_storybook"]
+  before_script:
+    - cd $FRONTEND_PATH
+    - !reference [.scripts, install_frontend_dependencies]
+  script:
+    - npx concurrently -k -s first -n "SB,TEST" -c "magenta,blue"
+      "npx http-server storybook --port 6006 --silent"
+      "npx wait-on tcp:6006 && npm run test-storybook"

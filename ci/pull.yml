@@ -1,0 +1,26 @@
+.pull:
+  stage: deploy_after
+  tags:
+    - deploy
+  variables: !reference [.variables, common]
+  before_script: !reference [.scripts, script]
+  script:
+    - ssh -p $SSH_PORT $PROJECT_HOST "cd $PROJECT_PATH/ && git checkout $BRANCH_NAME && git pull --force origin $BRANCH_NAME"
+
+pull_dev:
+  extends: .pull
+  variables: !reference [.variables, dev]
+  environment:
+    name: dev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      changes: !reference [.changes, pull]
+
+pull_prod:
+  extends: .pull
+  variables: !reference [.variables, prod]
+  environment:
+    name: prod
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $ENABLE_PROD_JOBS == "true"
+      changes: !reference [.changes, pull]

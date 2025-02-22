@@ -1,0 +1,30 @@
+frontend_build_storybook:
+  image: $IMAGE_FRONTEND
+  stage: build
+  variables: !reference [.variables, common]
+  tags:
+    - build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_COMMIT_BRANCH == "master"'
+      when: never
+      changes: !reference [.changes, frontend_build_storybook]
+    - if: $CI_COMMIT_BRANCH == "dev"
+      changes: !reference [.changes, frontend_build_storybook]
+    - if: $CI_COMMIT_BRANCH == "master" && $ENABLE_PROD_JOBS == "true"
+      changes: !reference [.changes, frontend_build_storybook]
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/.npm/
+    policy: pull
+  before_script:
+    - cd $FRONTEND_PATH
+    - !reference [.scripts, install_frontend_dependencies]
+  script:
+    - npm run build-storybook
+  artifacts:
+    paths:
+      - frontend/storybook/
+    expire_in: 1 day

@@ -1,0 +1,33 @@
+.frontend_deploy_storybook:
+  stage: deploy
+  tags:
+    - deploy
+  variables: !reference [.variables, common]
+  dependencies:
+    - frontend_build_storybook
+  needs: ["frontend_build_storybook"]
+  before_script:
+    - !reference [.scripts, script]
+  script:
+    - !reference [.scripts, install_deploy_deps]
+    # Копируем билд storybook с сервера gitlab ci
+    - rsync -arvh --delete-after -e "ssh -p $SSH_PORT" $FRONTEND_PATH/storybook $PROJECT_HOST:$PROJECT_PATH/$FRONTEND_PATH
+
+frontend_deploy_storybook_dev:
+  extends: .frontend_deploy_storybook
+  variables: !reference [.variables, dev]
+  environment:
+    name: dev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: never
+      changes: !reference [.changes, frontend_build_storybook]
+
+frontend_deploy_storybook_prod:
+  extends: .frontend_deploy_storybook
+  variables: !reference [.variables, prod]
+  environment:
+    name: prod
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $ENABLE_PROD_JOBS == "true"
+      changes: !reference [.changes, frontend_build_storybook]

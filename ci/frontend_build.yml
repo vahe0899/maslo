@@ -1,0 +1,52 @@
+.frontend_build:
+  image: $IMAGE_FRONTEND
+  stage: build
+  variables: !reference [.variables, common]
+  tags:
+    - build
+  cache:
+    - key:
+        files:
+          - frontend/package-lock.json
+      paths:
+        - frontend/.npm/
+      policy: pull-push
+    - key: $CI_COMMIT_REF_SLUG
+      paths:
+        - frontend/.next/cache/
+      policy: pull-push
+  artifacts:
+    paths:
+      - frontend/.next/
+      - frontend/junit.xml
+    exclude:
+      - frontend/.next/cache/**/*
+    expire_in: 1 day
+    reports:
+      junit:
+        - frontend/junit.xml
+  before_script:
+    - cd $FRONTEND_PATH
+    - !reference [.scripts, install_frontend_dependencies]
+
+frontend_build_dev:
+  extends: .frontend_build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: always
+      changes: !reference [.changes, frontend_build]
+  script:
+    - npm run test:ci
+    - npm run build
+    - bash robots-disallow.sh
+
+frontend_build_prod:
+  extends: .frontend_build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      changes: !reference [.changes, frontend_build]
+    - if: $CI_COMMIT_BRANCH == "master" && $ENABLE_PROD_JOBS == "true"
+      changes: !reference [.changes, frontend_build]
+  script:
+    - npm run test:ci
+    - npm run build

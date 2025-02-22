@@ -1,0 +1,7 @@
+body {
+    @extend .text-default;
+}
+
+.text-default {
+    @include responsive-font-size(15px, 18px, 1280px, 1920px);
+}

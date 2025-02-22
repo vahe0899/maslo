@@ -1,0 +1,23 @@
+.variables:
+  common: &common # Глобальные переменные
+    IMAGE_FRONTEND: node:18
+    E2E_TESTING_IMAGE: mcr.microsoft.com/playwright:v1.38.1-focal
+    GIT_DEPTH: 1
+    SSH_PORT: 22
+    PM2_PROCESS_NAME: "daigo-landing"
+    FRONTEND_PATH: ./frontend
+    BACKEND_PATH: ./backend
+    ENABLE_PROD_JOBS: "false"
+  dev: # Переменные для дева
+    <<: *common
+    ENV_PRIVATE_KEY: $STAGING_PRIVATE_KEY
+    PROJECT_HOST: "chipsa@91.230.210.213"
+    PROJECT_PATH: "/var/www/chipsa/data/www/daigo.chipsa.ru"
+    BRANCH_NAME: dev
+    SSH_PORT: 33022
+  prod: # Переменные для продакшена
+    <<: *common
+    ENV_PRIVATE_KEY: $PRODUCTION_PRIVATE_KEY
+    PROJECT_HOST: "<<[PROJECT_HOST_HERE]>>"
+    PROJECT_PATH: "<<[PROJECT_PATH_HERE]>>"
+    BRANCH_NAME: master
