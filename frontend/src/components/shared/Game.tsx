@@ -1,22 +1,15 @@
-import Matter, { Bodies, Body, Composite, Composites, Constraint, Engine, Events, Render, World } from 'matter-js';
+import Matter, { Body, Composite, Composites, Constraint, Events, World } from 'matter-js';
 import { useEffect, useRef, useState } from 'react';
-import { useWatchingYou } from 'react-watching-you';
 import WatchingYou from 'react-watching-you';
-import DefaultLayout from '@/components/layout/DefaultLayout';
-import FullscreenLottie from '@/components/shared/FullScreenLottie';
 
-const IndexPage = () => {
+const Game = () => {
     const sceneRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
     const [won, setWon] = useState(false);
     const [hitCount, setHitCount] = useState(0);
     const [isClient, setIsClient] = useState(false);
     const [chewing, setChewing] = useState(false);
-    const engineRef = useRef<Matter.Engine | null>(null);
     const pancakeRef = useRef<Composite | null>(null);
-    const [showLottie, setShowLottie] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -167,9 +160,7 @@ const IndexPage = () => {
                     startChewing();
 
                     // Генерируем новый блин
-                    if (hitCount < 5) {
-                        generateNewPancake();
-                    }
+                    generateNewPancake();
                 } else if (
                     (bodyA === ground || bodyB === ground) &&
                     (pancakeRef.current?.bodies.includes(bodyA) || pancakeRef.current?.bodies.includes(bodyB))
@@ -261,90 +252,50 @@ const IndexPage = () => {
         };
     }, [dimensions]);
 
-    useEffect(() => {
-        if (hitCount >= 5) {
-            setShowLottie(true);
-            setTimeout(() => {
-                setShowModal(true);
-                setTimeout(() => setModalVisible(true), 10); // Небольшая задержка для плавности
-            }, 1500);
-
-            // Останавливаем физический движок
-            if (engineRef.current) {
-                Matter.Engine.clear(engineRef.current);
-            }
-        }
-    }, [hitCount]);
-
     const eyesPower = { x: 14, y: 25 };
-
     return (
-        <DefaultLayout>
-            <div className="game-wrapper">
-                <div
-                    style={{
-                        opacity: showLottie ? 1 : 0,
-                        transition: 'opacity 1s ease-in-out',
-                        position: 'absolute',
-                        width: '100vw',
-                        height: '100vh',
-                        top: 0,
-                        left: 0,
-                    }}
-                >
-                    <FullscreenLottie />
-                </div>{' '}
-                <div ref={sceneRef} style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}></div>
-                <div style={{ position: 'absolute', top: 20, left: 20, color: 'white', fontSize: 24 }}>
-                    Попаданий: {hitCount} {won && '🎉 Победа!'}
-                </div>
-                {isClient && (
-                    <div className="eyes-container">
-                        <div className="eye-white">
-                            <WatchingYou rotatable={false} power={eyesPower}>
-                                <div className="eye-brown">
-                                    <div className="eye-black">
-                                        <div className="eye-white-small"></div>
-                                    </div>
-                                </div>
-                            </WatchingYou>
-                        </div>
-                        <div className="eye-white">
-                            <WatchingYou rotatable={false} power={eyesPower}>
-                                <div className="eye-brown">
-                                    <div className="eye-black">
-                                        <div className="eye-white-small"></div>
-                                    </div>
-                                </div>
-                            </WatchingYou>
-                        </div>
-                    </div>
-                )}
-                <div className={`mouth ${chewing ? 'chewing' : ''}`}>
-                    <div className="teeth">
-                        <div className="tooth"></div>
-                        <div className="tooth"></div>
-                        <div className="tooth"></div>
-                    </div>
-                    <div className="bottom-teeth">
-                        <div className="tooth"></div>
-                        <div className="tooth"></div>
-                        <div className="tooth"></div>
-                        <div className="tooth"></div>
-                    </div>
-                </div>
-                {showModal && (
-                    <div className="modal-overlay">
-                        <div className={`modal ${modalVisible ? 'visible' : ''}`}>
-                            <h2>🎉 Поздравляем с Масленицей! 🥞</h2>
-                            <p>Ты попал 5 раз! Ура!</p>
-                            <button onClick={() => window.location.reload()}>Играть снова</button>
-                        </div>
-                    </div>
-                )}
+        <div className="game-wrapper">
+            <div ref={sceneRef} style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}></div>
+            <div style={{ position: 'absolute', top: 20, left: 20, color: 'white', fontSize: 24 }}>
+                Попаданий: {hitCount} {won && '🎉 Победа!'}
             </div>
-        </DefaultLayout>
+            {isClient && (
+                <div className="eyes-container">
+                    <div className="eye-white">
+                        <WatchingYou rotatable={false} power={eyesPower}>
+                            <div className="eye-brown">
+                                <div className="eye-black">
+                                    <div className="eye-white-small"></div>
+                                </div>
+                            </div>
+                        </WatchingYou>
+                    </div>
+                    <div className="eye-white">
+                        <WatchingYou rotatable={false} power={eyesPower}>
+                            <div className="eye-brown">
+                                <div className="eye-black">
+                                    <div className="eye-white-small"></div>
+                                </div>
+                            </div>
+                        </WatchingYou>
+                    </div>
+                </div>
+            )}
+            <div className={`mouth ${chewing ? 'chewing' : ''}`}>
+                <div className="teeth">
+                    <div className="tooth"></div>
+                    <div className="tooth"></div>
+                    <div className="tooth"></div>
+                </div>
+                <div className="bottom-teeth">
+                    <div className="tooth"></div>
+                    <div className="tooth"></div>
+                    <div className="tooth"></div>
+                    <div className="tooth"></div>
+                </div>
+            </div>
+        </div>
     );
 };
 
-export default IndexPage;
+export default Game;

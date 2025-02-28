@@ -12,7 +12,7 @@ export const getStaticProps: GetStaticProps<CommonPageProps> = async () => {
     return {
         props: {
             meta: {
-                baseTitle: '[APP_TITLE]',
+                baseTitle: 'IT Масленница',
                 title: 'Page not found',
                 ogImage: '/img/og-image.jpg',
             },

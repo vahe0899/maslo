@@ -58,13 +58,13 @@ const App = ({ Component, pageProps }: AppProps<CommonPageProps>) => {
         <Providers>
             <AppInits />
             <AppHead meta={pageProps.meta} />
-            <Header />
+            {/* <Header /> */}
             <main className="main">
                 <AnimatedPage pageProps={pageProps}>
                     <Component {...pageProps} key={router.asPath} />
                 </AnimatedPage>
             </main>
-            <Footer />
+            {/* <Footer /> */}
             {process.env.NODE_ENV === 'development' && <LayoutGrid />}
         </Providers>
     );
