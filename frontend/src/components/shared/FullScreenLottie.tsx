@@ -1,5 +1,7 @@
-import Lottie from 'react-lottie';
+import dynamic from 'next/dynamic';
 import animationData from '@/svg/fire.json';
+
+const Lottie = dynamic(() => import('react-lottie'), { ssr: false });
 
 const FullscreenLottie = () => {
     return (
